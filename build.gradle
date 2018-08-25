@@ -1,0 +1,35 @@
+
+apply plugin: 'scala'
+apply plugin: 'eclipse'
+
+// group = theGroup
+// name = "scones-file-format"
+version = "0.1.0"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.scala-lang:scala-library:2.12.6'
+    compile 'org.scalacheck:scalacheck_2.12:1.14.0'
+	testCompile 'junit:junit:4.+'
+}
+
+tasks.withType(ScalaCompile) {
+    configure(scalaCompileOptions.forkOptions) {
+        memoryMaximumSize = '2g'
+    }
+}
+
+compileScala {
+	scalaCompileOptions.additionalParameters = ["-feature"]
+}
+
+task scalacheck(dependsOn: ['testClasses'], type: JavaExec) {
+  main = 'se.mjukomp.scones.AllProps'
+  classpath = sourceSets.test.runtimeClasspath
+  outputs.upToDateWhen { false }
+}
+
+test.dependsOn scalacheck
