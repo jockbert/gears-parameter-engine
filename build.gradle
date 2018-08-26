@@ -2,8 +2,6 @@
 apply plugin: 'scala'
 apply plugin: 'eclipse'
 
-// group = theGroup
-// name = "scones-file-format"
 version = "0.1.0"
 
 repositories {
@@ -11,9 +9,8 @@ repositories {
 }
 
 dependencies {
-    compile 'org.scala-lang:scala-library:2.12.6'
-    compile 'org.scalacheck:scalacheck_2.12:1.14.0'
-	testCompile 'junit:junit:4.+'
+    compile 'org.scala-lang:scala-library-all:2.12.6'
+	compile 'org.scalacheck:scalacheck_2.12:1.14.0'
 }
 
 tasks.withType(ScalaCompile) {
