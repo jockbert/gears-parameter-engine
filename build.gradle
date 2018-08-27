@@ -24,7 +24,7 @@ compileScala {
 }
 
 task scalacheck(dependsOn: ['testClasses'], type: JavaExec) {
-  main = 'se.mjukomp.scones.AllProps'
+  main = 'se.mjukomp.gears.AllProps'
   classpath = sourceSets.test.runtimeClasspath
   outputs.upToDateWhen { false }
 }

@@ -3,11 +3,11 @@ package se.mjukomp.gears
 import org.scalacheck.Prop._
 import org.scalacheck.Properties
 
-import se.mjukomp.gears.SomeCode._
+import se.mjukomp.gears.Parameter._
 import org.scalacheck.Prop
 import scala.collection.immutable.Stream
 
-object SomeProps extends Properties("Some") {
+object ParameterProps extends Properties("Parameter") {
 
   property("Single Value") = {
     val single = Parameter("Single", 0.1, 33)
@@ -20,7 +20,7 @@ object SomeProps extends Properties("Some") {
   property("Frequency and period") = {
 
     val frequency = Parameter("frequency", 10, 100)
-    val period = Parameter("period", 0.0002, 1)
+    val period = Parameter("period", 0.0002, 20000)
 
     val minBefore = (period.min ?= 0.0002) :|
       "Period.min not interlocked to frequency"
