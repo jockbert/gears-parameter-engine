@@ -28,4 +28,13 @@ case class Parameter(name: String, var min: Value, var max: Value) {
 
     bindings = BindingTo(other, relation) :: bindings
   }
+
+  def inversInterlock(other: Parameter, relation: MonotoneRelation) = {
+
+    other.max = relation(min)
+    other.value = relation(value)
+    other.min = relation(max)
+
+    bindings = BindingTo(other, relation) :: bindings
+  }
 }

@@ -19,7 +19,7 @@ object ParameterProps extends Properties("Parameter") {
 
   property("Frequency and period") = {
 
-    val frequency = Parameter("frequency", 10, 100)
+    val frequency = Parameter("frequency", 1, 100)
     val period = Parameter("period", 0.0002, 20000)
 
     val minBefore = (period.min ?= 0.0002) :|
@@ -31,15 +31,15 @@ object ParameterProps extends Properties("Parameter") {
     val maxBefore = (period.max ?= 20000) :|
       "Period.max not interlocked to frequency"
 
-    frequency.interlock(period, f => 1 / f)
+    frequency.inversInterlock(period, f => 1 / f)
 
-    val minAfter = (period.min ?= 0.1) :|
+    val minAfter = (period.min ?= 0.01) :|
       "Period.min interlocked to frequency"
 
-    val valueAfter = (period.value ?= 0.1) :|
+    val valueAfter = (period.value ?= 1) :|
       "Period.value interlocked to frequency"
 
-    val maxAfter = (period.max ?= 0.01) :|
+    val maxAfter = (period.max ?= 1) :|
       "Period.max interlocked to frequency"
 
     minBefore && valueBefore && maxBefore && minAfter && valueAfter && maxAfter
