@@ -11,14 +11,13 @@ import Parameter._
 
 case class BindingTo(target: Parameter, relation: MonotoneRelation)
 
-case class Parameter(name: String, var min: Value, var max: Value) {
+case class Parameter(
+  name:      String,
+  var min:   Value,
+  var value: Value,
+  var max:   Value) {
 
   private var bindings: List[BindingTo] = Nil
-
-  var value: Value = min
-
-  def apply = value
-  def update(newValue: Value) = { value = newValue }
 
   def interlock(other: Parameter, relation: MonotoneRelation) = {
 

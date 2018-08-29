@@ -10,38 +10,27 @@ import scala.collection.immutable.Stream
 object ParameterProps extends Properties("Parameter") {
 
   property("Single Value") = {
-    val single = Parameter("Single", 0.1, 33)
-
-    (single.value ?= 0.1) &&
-      (single.min ?= 0.1) &&
-      (single.max ?= 33)
+    val single = Parameter("Single", 0.1, 2, 33)
+    equals(single, 0.1, 2, 33)
   }
 
-  property("Frequency and period") = {
+  property("FrequencyAndPeriod") = {
+    val frequency = Parameter("frequency", 1, 5, 100)
+    val period = Parameter("period", 0.0002, 33, 20000)
 
-    val frequency = Parameter("frequency", 1, 100)
-    val period = Parameter("period", 0.0002, 20000)
+    equals(period, 0.0002, 33, 20000) :| "before" && {
 
-    val minBefore = (period.min ?= 0.0002) :|
-      "Period.min not interlocked to frequency"
+      frequency.inversInterlock(period, f => 1 / f)
 
-    val valueBefore = (period.value ?= 0.0002) :|
-      "Period.value not interlocked to frequency"
-
-    val maxBefore = (period.max ?= 20000) :|
-      "Period.max not interlocked to frequency"
-
-    frequency.inversInterlock(period, f => 1 / f)
-
-    val minAfter = (period.min ?= 0.01) :|
-      "Period.min interlocked to frequency"
-
-    val valueAfter = (period.value ?= 1) :|
-      "Period.value interlocked to frequency"
-
-    val maxAfter = (period.max ?= 1) :|
-      "Period.max interlocked to frequency"
-
-    minBefore && valueBefore && maxBefore && minAfter && valueAfter && maxAfter
+      equals(period, 0.01, 0.2, 1) :| "after"
+    }
   }
+
+  def equals(
+    actual: Parameter,
+    min:    Value, value: Value, max: Value) =
+
+    ((actual.min ?= min) :| (actual.name + " minimum")) &&
+      ((actual.value ?= value) :| (actual.name + " value")) &&
+      ((actual.max ?= max) :| (actual.name + " maximum"))
 }
