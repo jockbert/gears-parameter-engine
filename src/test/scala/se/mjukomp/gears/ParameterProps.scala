@@ -20,7 +20,7 @@ object ParameterProps extends Properties("Parameter") {
 
     equals(period, 0.0002, 33, 20000) :| "before" && {
 
-      frequency.inversInterlock(period, f => 1 / f)
+      period.inverseFunctionOf(frequency, f => 1 / f)
 
       equals(period, 0.01, 0.2, 1) :| "after"
     }

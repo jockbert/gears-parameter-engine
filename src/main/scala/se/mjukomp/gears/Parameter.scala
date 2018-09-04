@@ -19,20 +19,20 @@ case class Parameter(
 
   private var bindings: List[BindingTo] = Nil
 
-  def interlock(other: Parameter, relation: MonotoneRelation) = {
+  def functionOf(other: Parameter, relation: MonotoneRelation) = {
 
-    other.min = relation(min)
-    other.value = relation(value)
-    other.max = relation(max)
+    min = relation(other.min)
+    value = relation(other.value)
+    max = relation(other.max)
 
     bindings = BindingTo(other, relation) :: bindings
   }
 
-  def inversInterlock(other: Parameter, relation: MonotoneRelation) = {
+  def inverseFunctionOf(other: Parameter, relation: MonotoneRelation) = {
 
-    other.max = relation(min)
-    other.value = relation(value)
-    other.min = relation(max)
+    min = relation(other.max)
+    value = relation(other.value)
+    max = relation(other.min)
 
     bindings = BindingTo(other, relation) :: bindings
   }
