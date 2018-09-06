@@ -26,6 +26,21 @@ object ParameterProps extends Properties("Parameter") {
     }
   }
 
+  property("BacktrackFunctionInverseValue") = {
+    val a = Parameter("A", -1000, 3, 1000)
+    val b = Parameter("B", -1000, 3, 1000)
+    val fn = (x: Double) => 5 * x + 1
+
+    b.functionOf(a, fn)
+
+    val aValue = 10;
+    val bValue = fn(aValue)
+
+    b.value(bValue)
+
+    a.value ?= aValue
+  }
+
   def equals(
     actual: Parameter,
     min:    Value, value: Value, max: Value) =
