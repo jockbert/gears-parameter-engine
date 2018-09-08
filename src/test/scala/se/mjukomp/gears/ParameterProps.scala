@@ -26,7 +26,7 @@ object ParameterProps extends Properties("Parameter") {
     }
   }
 
-  property("DefaultRangeIsValueExtremes") = {
+  property("DefaultRange") = {
     val p = Parameter("P", 6)
 
     all(
@@ -35,7 +35,7 @@ object ParameterProps extends Properties("Parameter") {
       "max" |: (p.max ?= Parameter.ValueMax))
   }
 
-  property("BacktrackFunctionInverseValue") = {
+  property("BacktrackFunctionInverse") = {
     val aValue = 10;
     val a = Parameter("A", -1000, 3, 1000)
     val b = Parameter("B", -1000, 3, 1000)
