@@ -59,6 +59,30 @@ object ParameterProps extends Properties("Parameter") {
     b.value ?= fn(aValue)
   }
 
+  property("Align max restrict target B") = {
+    val a = Parameter("A", -1000, 3, 1000)
+    val b = Parameter("B", -1000, 4, 1000)
+    val fn = (x: Double) => x - 2
+
+    b.functionOf(a, fn)
+
+    all(
+      "B max" |: (b.max ?= 998),
+      "A max" |: (a.max ?= 1000))
+  }
+
+  property("Align max restrict source A") = {
+    val a = Parameter("A", -1000, 3, 1000)
+    val b = Parameter("B", -1000, 4, 1000)
+    val fn = (x: Double) => x + 2
+
+    b.functionOf(a, fn)
+
+    all(
+      "B max" |: (b.max ?= 1000),
+      "A max" |: (a.max ?= 998))
+  }
+
   def equals(
     actual: Parameter,
     min:    Value, value: Value, max: Value) =

@@ -63,8 +63,15 @@ case class Parameter(
 
     min = relation(other.min)
     _value = relation(other.value)
-    max = relation(other.max)
 
+    val newMax = relation(other.max)
+    val isNewMaxTooLarge = newMax > max
+    if (isNewMaxTooLarge) {
+      val otherNewMax = backtrackValue(max, relation, other.min, other.max)
+      other.max = otherNewMax
+    } else {
+      max = newMax
+    }
     val binding = Binding(other, relation, this)
 
     bindingsFrom = binding :: bindingsFrom
