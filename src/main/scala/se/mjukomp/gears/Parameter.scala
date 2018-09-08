@@ -26,6 +26,7 @@ case class Parameter(
   var max:            Value) {
 
   private var bindingsFrom: List[Binding] = Nil
+  private var bindingsTo: List[Binding] = Nil
 
   def value() = _value
 
@@ -55,6 +56,7 @@ case class Parameter(
 
     _value = v
 
+    bindingsTo.foreach(b => b.to._value = b.relation(v))
   }
 
   def functionOf(other: Parameter, relation: MonotoneFn) = {
@@ -63,7 +65,10 @@ case class Parameter(
     _value = relation(other.value)
     max = relation(other.max)
 
-    bindingsFrom = Binding(other, relation, this) :: bindingsFrom
+    val binding = Binding(other, relation, this)
+
+    bindingsFrom = binding :: bindingsFrom
+    other.bindingsTo = binding :: other.bindingsTo
   }
 
   def inverseFunctionOf(other: Parameter, relation: MonotoneFn) = {
