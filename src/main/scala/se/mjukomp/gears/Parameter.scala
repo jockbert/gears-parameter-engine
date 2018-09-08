@@ -61,8 +61,16 @@ case class Parameter(
 
   def functionOf(other: Parameter, relation: MonotoneFn) = {
 
-    min = relation(other.min)
     _value = relation(other.value)
+
+    val newMin = relation(other.min)
+    val isNewMinTooSmall = newMin < min
+    if (isNewMinTooSmall) {
+      val otherNewMin = backtrackValue(min, relation, other.min, other.max)
+      other.min = otherNewMin
+    } else {
+      min = newMin
+    }
 
     val newMax = relation(other.max)
     val isNewMaxTooLarge = newMax > max
@@ -72,6 +80,7 @@ case class Parameter(
     } else {
       max = newMax
     }
+
     val binding = Binding(other, relation, this)
 
     bindingsFrom = binding :: bindingsFrom
