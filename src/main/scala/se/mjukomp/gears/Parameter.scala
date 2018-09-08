@@ -7,6 +7,12 @@ object Parameter {
 
   type Value = Double
 
+  val ValueMin = Double.MinValue
+  val ValueMax = Double.MaxValue
+
+  def apply(name: String, value: Value): Parameter =
+    apply(name, ValueMin, value, ValueMax)
+
 }
 
 import scala.annotation.tailrec
