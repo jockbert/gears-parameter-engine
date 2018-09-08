@@ -36,16 +36,13 @@ object ParameterProps extends Properties("Parameter") {
   }
 
   property("BacktrackFunctionInverseValue") = {
+    val aValue = 10;
     val a = Parameter("A", -1000, 3, 1000)
     val b = Parameter("B", -1000, 3, 1000)
     val fn = (x: Double) => 5 * x + 1
 
     b.functionOf(a, fn)
-
-    val aValue = 10;
-    val bValue = fn(aValue)
-
-    b.value(bValue)
+    b.value(fn(aValue))
 
     a.value ?= aValue
   }
