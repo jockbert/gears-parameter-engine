@@ -29,7 +29,9 @@ case class Range(min: Value, max: Value) {
 sealed trait RelationError
 case object NoRangeOverlap extends RelationError
 
-case class Relation(from: Parameter, fn: MonotoneFn, to: Parameter)
+case class Relation(from: Parameter, fn: MonotoneFn, to: Parameter) {
+  override def toString(): String = s"Relation(${from.name},${to.name})"
+}
 
 case class Parameter(
   name:               String,
