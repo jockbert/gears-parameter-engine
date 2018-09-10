@@ -1,11 +1,11 @@
 package se.mjukomp.gears
 
 import Parameter._
+import scala.annotation.tailrec
 
 object Parameter {
-  type MonotoneFn = Double => Double
-
   type Value = Double
+  type MonotoneFn = Value => Value
 
   val ValueMin = Double.MinValue
   val ValueMax = Double.MaxValue
@@ -15,7 +15,6 @@ object Parameter {
 
 }
 
-import scala.annotation.tailrec
 
 case class Binding(from: Parameter, relation: MonotoneFn, to: Parameter)
 
