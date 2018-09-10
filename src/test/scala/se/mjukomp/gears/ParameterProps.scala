@@ -14,7 +14,7 @@ object ParameterProps extends Properties("Parameter") {
     equals(single, 0.1, 2, 33)
   }
 
-  property("FrequencyAndPeriod") = {
+  property("Frequency and period example") = {
     val frequency = Parameter("frequency", 1, 5, 100)
     val period = Parameter("period", 0.0002, 33, 20000)
 
@@ -26,7 +26,7 @@ object ParameterProps extends Properties("Parameter") {
     }
   }
 
-  property("DefaultRange") = {
+  property("Has default range") = {
     val p = Parameter("P", 6)
 
     all(
@@ -35,7 +35,7 @@ object ParameterProps extends Properties("Parameter") {
       "max" |: (p.max ?= Parameter.ValueMax))
   }
 
-  property("BacktrackFunctionInverse") = {
+  property("Backtrack function inverse") = {
     val aValue = 10;
     val a = Parameter("A", -1000, 3, 1000)
     val b = Parameter("B", -1000, 4, 1000)
@@ -47,7 +47,7 @@ object ParameterProps extends Properties("Parameter") {
     a.value ?= aValue
   }
 
-  property("PropagateFunctionValue") = {
+  property("Propagate function value") = {
     val aValue = 10;
     val a = Parameter("A", -1000, 3, 1000)
     val b = Parameter("B", -1000, 4, 1000)
