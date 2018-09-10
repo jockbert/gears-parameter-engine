@@ -7,11 +7,12 @@ object Parameter {
   type Value = Double
   type MonotoneFn = Value => Value
 
-  val ValueMin: Value = Double.MinValue
-  val ValueMax: Value = Double.MaxValue
+  val valueMin: Value = Double.MinValue
+  val valueMax: Value = Double.MaxValue
+  val defaultRange = Range(valueMin, valueMax)
 
   def apply(name: String, value: Value): Parameter =
-    apply(name, ValueMin, value, ValueMax)
+    apply(name, value, valueMin, valueMax)
 }
 
 case class Range(min: Value, max: Value) {
@@ -35,8 +36,8 @@ case class Relation(from: Parameter, fn: MonotoneFn, to: Parameter) {
 
 case class Parameter(
   name:               String,
-  var min:            Value,
   private var _value: Value,
+  var min:            Value,
   var max:            Value) {
 
   private var relationsFrom: List[Relation] = Nil

@@ -10,19 +10,19 @@ import scala.collection.immutable.Stream
 object ParameterProps extends Properties("Parameter") {
 
   property("Single Value") = {
-    val single = Parameter("Single", 0.1, 2, 33)
-    equals(single, 0.1, 2, 33)
+    val single = Parameter("Single", 2, 0.1, 33)
+    equals(single, 2, 0.1, 33)
   }
 
   property("Frequency and period example") = {
-    val frequency = Parameter("frequency", 1, 5, 100)
-    val period = Parameter("period", 0.0002, 33, 20000)
+    val frequency = Parameter("frequency", 5, 1, 100)
+    val period = Parameter("period", 33, 0.0002, 20000)
 
-    equals(period, 0.0002, 33, 20000) :| "before" && {
+    equals(period, 33, 0.0002, 20000) :| "before" && {
 
       period.inverseFunctionOf(frequency, f => 1 / f)
 
-      equals(period, 0.01, 0.2, 1) :| "after"
+      equals(period, 0.2, 0.01, 1) :| "after"
     }
   }
 
@@ -30,15 +30,15 @@ object ParameterProps extends Properties("Parameter") {
     val p = Parameter("P", 6)
 
     all(
-      "min" |: (p.min ?= Parameter.ValueMin),
+      "min" |: (p.min ?= Parameter.defaultRange.min),
       "value" |: (p.value ?= 6),
-      "max" |: (p.max ?= Parameter.ValueMax))
+      "max" |: (p.max ?= Parameter.defaultRange.max))
   }
 
   property("Backtrack function inverse") = {
     val aValue = 10;
-    val a = Parameter("A", -1000, 3, 1000)
-    val b = Parameter("B", -1000, 4, 1000)
+    val a = Parameter("A", 3, -1000, 1000)
+    val b = Parameter("B", 4, -1000, 1000)
     val fn = (x: Double) => 5 * x + 1
 
     b.functionOf(a, fn)
@@ -49,8 +49,8 @@ object ParameterProps extends Properties("Parameter") {
 
   property("Propagate function value") = {
     val aValue = 10;
-    val a = Parameter("A", -1000, 3, 1000)
-    val b = Parameter("B", -1000, 4, 1000)
+    val a = Parameter("A", 3, -1000, 1000)
+    val b = Parameter("B", 4, -1000, 1000)
     val fn = (x: Double) => 5 * x + 1
 
     b.functionOf(a, fn)
@@ -60,8 +60,8 @@ object ParameterProps extends Properties("Parameter") {
   }
 
   property("Align max restrict target B") = {
-    val a = Parameter("A", -1000, 3, 1000)
-    val b = Parameter("B", -1000, 4, 1000)
+    val a = Parameter("A", 3, -1000, 1000)
+    val b = Parameter("B", 4, -1000, 1000)
     val fn = (x: Double) => x - 2
 
     b.functionOf(a, fn)
@@ -72,8 +72,8 @@ object ParameterProps extends Properties("Parameter") {
   }
 
   property("Align max restrict source A") = {
-    val a = Parameter("A", -1000, 3, 1000)
-    val b = Parameter("B", -1000, 4, 1000)
+    val a = Parameter("A", 3, -1000, 1000)
+    val b = Parameter("B", 4, -1000, 1000)
     val fn = (x: Double) => x + 2
 
     b.functionOf(a, fn)
@@ -84,8 +84,8 @@ object ParameterProps extends Properties("Parameter") {
   }
 
   property("Align min restrict target B") = {
-    val a = Parameter("A", -1000, 3, 1000)
-    val b = Parameter("B", -1000, 4, 1000)
+    val a = Parameter("A", 3, -1000, 1000)
+    val b = Parameter("B", 4, -1000, 1000)
     val fn = (x: Double) => x + 2
 
     b.functionOf(a, fn)
@@ -96,8 +96,8 @@ object ParameterProps extends Properties("Parameter") {
   }
 
   property("Align min restrict source A") = {
-    val a = Parameter("A", -1000, 3, 1000)
-    val b = Parameter("B", -1000, 4, 1000)
+    val a = Parameter("A", 3, -1000, 1000)
+    val b = Parameter("B", 4, -1000, 1000)
     val fn = (x: Double) => x - 2
 
     b.functionOf(a, fn)
@@ -108,16 +108,16 @@ object ParameterProps extends Properties("Parameter") {
   }
 
   property("Detect range missmatch") = {
-    val a = Parameter("A", -1000, 3, 1000)
-    val b = Parameter("B", -1000, 4, 1000)
+    val a = Parameter("A", 3, -1000, 1000)
+    val b = Parameter("B", 4, -1000, 1000)
     val fn = (x: Double) => x + 3000
 
     b.functionOf(a, fn) ?= Left(NoRangeOverlap)
   }
 
   property("Detect single value range match") = {
-    val a = Parameter("A", -1000, 3, 10)
-    val b = Parameter("B", 10, 4, 1000)
+    val a = Parameter("A", 3, -1000, 10)
+    val b = Parameter("B", 4, 10, 1000)
     val fn = (x: Double) => x * 1
 
     b.functionOf(a, fn) ?= Right(Relation(a, fn, b))
