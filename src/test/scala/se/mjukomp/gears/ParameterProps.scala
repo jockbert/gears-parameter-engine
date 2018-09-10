@@ -107,6 +107,22 @@ object ParameterProps extends Properties("Parameter") {
       "A min" |: (a.min ?= -998))
   }
 
+  property("Detect range missmatch") = {
+    val a = Parameter("A", -1000, 3, 1000)
+    val b = Parameter("B", -1000, 4, 1000)
+    val fn = (x: Double) => x + 3000
+
+    b.functionOf(a, fn) ?= Left(NoRangeOverlap)
+  }
+
+  property("Detect single value range match") = {
+    val a = Parameter("A", -1000, 3, 10)
+    val b = Parameter("B", 10, 4, 1000)
+    val fn = (x: Double) => x * 1
+
+    b.functionOf(a, fn) ?= Right(Binding(a, fn, b))
+  }
+
   def equals(
     actual: Parameter,
     min:    Value, value: Value, max: Value) =
