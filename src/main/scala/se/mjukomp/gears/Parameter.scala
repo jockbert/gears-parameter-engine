@@ -7,12 +7,11 @@ object Parameter {
   type Value = Double
   type MonotoneFn = Value => Value
 
-  val ValueMin = Double.MinValue
-  val ValueMax = Double.MaxValue
+  val ValueMin: Value = Double.MinValue
+  val ValueMax: Value = Double.MaxValue
 
   def apply(name: String, value: Value): Parameter =
     apply(name, ValueMin, value, ValueMax)
-
 }
 
 case class Range(min: Value, max: Value) {
@@ -25,13 +24,12 @@ case class Range(min: Value, max: Value) {
 
   def map(fn: MonotoneFn) =
     Range(fn(min), fn(max))
-
 }
 
 sealed trait RelationError
 case object NoRangeOverlap extends RelationError
 
-case class Binding(from: Parameter, relation: MonotoneFn, to: Parameter)
+case class Relation(from: Parameter, fn: MonotoneFn, to: Parameter)
 
 case class Parameter(
   name:               String,
@@ -39,8 +37,8 @@ case class Parameter(
   private var _value: Value,
   var max:            Value) {
 
-  private var bindingsFrom: List[Binding] = Nil
-  private var bindingsTo: List[Binding] = Nil
+  private var relationsFrom: List[Relation] = Nil
+  private var relationsTo: List[Relation] = Nil
 
   def value() = _value
 
@@ -63,63 +61,63 @@ case class Parameter(
 
   def value(v: Value): Unit = {
 
-    bindingsFrom.foreach(b => {
-      val newValue = backtrackValue(v, b.relation, b.from.min, b.from.max)
+    relationsFrom.foreach(b => {
+      val newValue = backtrackValue(v, b.fn, b.from.min, b.from.max)
       b.from.value(newValue)
     })
 
     _value = v
 
-    bindingsTo.foreach(b => b.to._value = b.relation(v))
+    relationsTo.foreach(b => b.to._value = b.fn(v))
   }
 
   def functionOf(
-    other:    Parameter,
-    relation: MonotoneFn): Either[RelationError, Binding] = {
+    source: Parameter,
+    fn:     MonotoneFn): Either[RelationError, Relation] = {
 
-    _value = relation(other.value)
+    _value = fn(source.value)
 
-    val otherRange = Range(other.min, other.max)
+    val otherRange = Range(source.min, source.max)
     val range = Range(min, max)
-    val mappedRange = otherRange.map(relation)
+    val mappedRange = otherRange.map(fn)
     val narrowedRange = mappedRange.intersection(range)
 
     if (narrowedRange.isEmpty)
       Left(NoRangeOverlap)
     else {
 
-      val newMin = relation(other.min)
+      val newMin = fn(source.min)
       val isNewMinTooSmall = newMin < min
       if (isNewMinTooSmall) {
-        val otherNewMin = backtrackValue(min, relation, other.min, other.max)
-        other.min = otherNewMin
+        val otherNewMin = backtrackValue(min, fn, source.min, source.max)
+        source.min = otherNewMin
       } else {
         min = newMin
       }
 
-      val newMax = relation(other.max)
+      val newMax = fn(source.max)
       val isNewMaxTooLarge = newMax > max
       if (isNewMaxTooLarge) {
-        val otherNewMax = backtrackValue(max, relation, other.min, other.max)
-        other.max = otherNewMax
+        val otherNewMax = backtrackValue(max, fn, source.min, source.max)
+        source.max = otherNewMax
       } else {
         max = newMax
       }
 
-      val binding = Binding(other, relation, this)
+      val relation = Relation(source, fn, this)
 
-      bindingsFrom = binding :: bindingsFrom
-      other.bindingsTo = binding :: other.bindingsTo
-      Right(binding)
+      relationsFrom = relation :: relationsFrom
+      source.relationsTo = relation :: source.relationsTo
+      Right(relation)
     }
   }
 
-  def inverseFunctionOf(other: Parameter, relation: MonotoneFn) = {
+  def inverseFunctionOf(source: Parameter, fn: MonotoneFn) = {
 
-    min = relation(other.max)
-    _value = relation(other.value)
-    max = relation(other.min)
+    min = fn(source.max)
+    _value = fn(source.value)
+    max = fn(source.min)
 
-    bindingsFrom = Binding(other, relation, this) :: bindingsFrom
+    relationsFrom = Relation(source, fn, this) :: relationsFrom
   }
 }

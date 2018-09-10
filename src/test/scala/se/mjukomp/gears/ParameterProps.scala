@@ -120,7 +120,7 @@ object ParameterProps extends Properties("Parameter") {
     val b = Parameter("B", 10, 4, 1000)
     val fn = (x: Double) => x * 1
 
-    b.functionOf(a, fn) ?= Right(Binding(a, fn, b))
+    b.functionOf(a, fn) ?= Right(Relation(a, fn, b))
   }
 
   def equals(
