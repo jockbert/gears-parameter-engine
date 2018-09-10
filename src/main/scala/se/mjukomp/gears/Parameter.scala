@@ -15,25 +15,6 @@ object Parameter {
     apply(name, value, valueMin, valueMax)
 }
 
-case class Range(min: Value, max: Value) {
-
-  def intersection(other: Range) =
-    if (other.max < min || other.min > max) None
-    else Some(Range(
-      Math.min(min, other.min),
-      Math.max(max, other.max)))
-
-  def map(fn: MonotoneFn) =
-    Range(fn(min), fn(max))
-}
-
-sealed trait RelationError
-case object NoRangeOverlap extends RelationError
-
-case class Relation(from: Parameter, fn: MonotoneFn, to: Parameter) {
-  override def toString(): String = s"Relation(${from.name},${to.name})"
-}
-
 case class Parameter(
   name:               String,
   private var _value: Value,
