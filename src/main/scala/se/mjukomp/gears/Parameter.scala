@@ -66,37 +66,22 @@ case class Parameter(
     fn:     MonotoneFn): Either[RelationError, Relation] = {
 
     _value = fn(source.value)
-
     val narrowedRange = source.range
       .map(fn).intersection(range)
 
-    if (narrowedRange.isEmpty)
-      Left(NoRangeOverlap)
-    else {
+    narrowedRange match {
+      case None => Left(NoRangeOverlap)
+      case Some(newRange) => {
+        this.range = newRange
+        source.range = Range(
+          backtrackValue(min, fn, source.range),
+          backtrackValue(max, fn, source.range))
 
-      val newMin = fn(source.min)
-      val isNewMinTooSmall = newMin < min
-      if (isNewMinTooSmall) {
-        val otherNewMin = backtrackValue(min, fn, source.range)
-        source.min(otherNewMin)
-      } else {
-        min(newMin)
+        val relation = Relation(source, fn, this)
+        relationsFrom = relation :: relationsFrom
+        source.relationsTo = relation :: source.relationsTo
+        Right(relation)
       }
-
-      val newMax = fn(source.max)
-      val isNewMaxTooLarge = newMax > max
-      if (isNewMaxTooLarge) {
-        val otherNewMax = backtrackValue(max, fn, source.range)
-        source.max(otherNewMax)
-      } else {
-        max(newMax)
-      }
-
-      val relation = Relation(source, fn, this)
-
-      relationsFrom = relation :: relationsFrom
-      source.relationsTo = relation :: source.relationsTo
-      Right(relation)
     }
   }
 
