@@ -125,7 +125,9 @@ object ParameterProps extends Properties("Parameter") {
 
   def equals(
     actual: Parameter,
-    min:    Value, value: Value, max: Value) =
+    value:  Value,
+    min:    Value,
+    max:    Value) =
 
     ((actual.min ?= min) :| (actual.name + " minimum")) &&
       ((actual.value ?= value) :| (actual.name + " value")) &&

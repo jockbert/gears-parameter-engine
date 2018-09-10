@@ -12,41 +12,47 @@ object Parameter {
   val defaultRange = Range(valueMin, valueMax)
 
   def apply(name: String, value: Value): Parameter =
-    apply(name, value, valueMin, valueMax)
+    apply(name, value, defaultRange)
+  def apply(name: String, value: Value, min: Value, max: Value): Parameter =
+    apply(name, value, Range(min, max))
 }
 
 case class Parameter(
   name:               String,
   private var _value: Value,
-  var min:            Value,
-  var max:            Value) {
+  var range:          Range) {
 
   private var relationsFrom: List[Relation] = Nil
   private var relationsTo: List[Relation] = Nil
 
+  def min() = range.min
+  def max() = range.max
+  def min(v: Value): Unit = range = range.copy(min = v)
+  def max(v: Value): Unit = range = range.copy(max = v)
   def value() = _value
 
   @tailrec
-  final def backtrackValue(target: Value, relation: MonotoneFn, rangeMin: Value, rangeMax: Value): Double = {
+  final def backtrackValue(target: Value, fn: MonotoneFn, range: Range): Double = {
 
     //System.err.println(s"[$rangeMin, $rangeMax]")
-    if (rangeMin + math.ulp(rangeMin) >= rangeMax) {
-      if (relation(rangeMin) < target) rangeMax else rangeMin
+    if (range.min + math.ulp(range.min) >= range.max) {
+      if (fn(range.min) < target) range.max else range.min
     } else {
-      val rangeMiddle = (rangeMin + rangeMax) / 2
-      val middleIsLarge = relation(rangeMiddle) > target
+      val middle = (range.min + range.max) / 2
+      val middleIsLarge = fn(middle) > target
 
-      val newMin = if (middleIsLarge) rangeMin else rangeMiddle
-      val newMax = if (middleIsLarge) rangeMiddle else rangeMax
+      val newRange =
+        if (middleIsLarge) range.copy(max = middle)
+        else range.copy(min = middle)
 
-      backtrackValue(target, relation, newMin, newMax)
+      backtrackValue(target, fn, newRange)
     }
   }
 
   def value(v: Value): Unit = {
 
     relationsFrom.foreach(b => {
-      val newValue = backtrackValue(v, b.fn, b.from.min, b.from.max)
+      val newValue = backtrackValue(v, b.fn, b.from.range)
       b.from.value(newValue)
     })
 
@@ -61,10 +67,8 @@ case class Parameter(
 
     _value = fn(source.value)
 
-    val otherRange = Range(source.min, source.max)
-    val range = Range(min, max)
-    val mappedRange = otherRange.map(fn)
-    val narrowedRange = mappedRange.intersection(range)
+    val narrowedRange = source.range
+      .map(fn).intersection(range)
 
     if (narrowedRange.isEmpty)
       Left(NoRangeOverlap)
@@ -73,19 +77,19 @@ case class Parameter(
       val newMin = fn(source.min)
       val isNewMinTooSmall = newMin < min
       if (isNewMinTooSmall) {
-        val otherNewMin = backtrackValue(min, fn, source.min, source.max)
-        source.min = otherNewMin
+        val otherNewMin = backtrackValue(min, fn, source.range)
+        source.min(otherNewMin)
       } else {
-        min = newMin
+        min(newMin)
       }
 
       val newMax = fn(source.max)
       val isNewMaxTooLarge = newMax > max
       if (isNewMaxTooLarge) {
-        val otherNewMax = backtrackValue(max, fn, source.min, source.max)
-        source.max = otherNewMax
+        val otherNewMax = backtrackValue(max, fn, source.range)
+        source.max(otherNewMax)
       } else {
-        max = newMax
+        max(newMax)
       }
 
       val relation = Relation(source, fn, this)
@@ -98,9 +102,9 @@ case class Parameter(
 
   def inverseFunctionOf(source: Parameter, fn: MonotoneFn) = {
 
-    min = fn(source.max)
+    min(fn(source.max))
     _value = fn(source.value)
-    max = fn(source.min)
+    max(fn(source.min))
 
     relationsFrom = Relation(source, fn, this) :: relationsFrom
   }
