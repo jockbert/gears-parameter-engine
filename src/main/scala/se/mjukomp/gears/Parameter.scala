@@ -1,18 +1,16 @@
 package se.mjukomp.gears
 
-import Parameter._
 import scala.annotation.tailrec
 
+/** A parameter with value and a valid range. */
 object Parameter {
-  type Value = Double
-  type MonotoneFn = Value => Value
-
-  val valueMin: Value = Double.MinValue
-  val valueMax: Value = Double.MaxValue
+  private val valueMin: Value = Double.MinValue
+  private val valueMax: Value = Double.MaxValue
   val defaultRange = Range(valueMin, valueMax)
 
   def apply(name: String, value: Value): Parameter =
     apply(name, value, defaultRange)
+
   def apply(name: String, value: Value, min: Value, max: Value): Parameter =
     apply(name, value, Range(min, max))
 }
@@ -34,7 +32,6 @@ case class Parameter(
   @tailrec
   final def backtrackValue(target: Value, fn: MonotoneFn, range: Range): Double = {
 
-    //System.err.println(s"[$rangeMin, $rangeMax]")
     if (range.min + math.ulp(range.min) >= range.max) {
       if (fn(range.min) < target) range.max else range.min
     } else {
@@ -86,11 +83,9 @@ case class Parameter(
   }
 
   def inverseFunctionOf(source: Parameter, fn: MonotoneFn) = {
-
     min(fn(source.max))
     _value = fn(source.value)
     max(fn(source.min))
-
     relationsFrom = Relation(source, fn, this) :: relationsFrom
   }
 }

@@ -1,11 +1,8 @@
 package se.mjukomp.gears
 
+import org.scalacheck.Prop
 import org.scalacheck.Prop._
 import org.scalacheck.Properties
-
-import se.mjukomp.gears.Parameter._
-import org.scalacheck.Prop
-import scala.collection.immutable.Stream
 
 object ParameterProps extends Properties("Parameter") {
 
@@ -116,6 +113,7 @@ object ParameterProps extends Properties("Parameter") {
   }
 
   property("Detect single value range match") = {
+    // Will lead to a degenerate interval [10,10]
     val a = Parameter("A", 3, -1000, 10)
     val b = Parameter("B", 4, 10, 1000)
     val fn = (x: Double) => x * 1

@@ -1,7 +1,6 @@
 package se.mjukomp.gears
 
-import Parameter._
-
+/** A value range (i.e. closed interval). */
 case class Range(min: Value, max: Value) {
 
   def intersection(other: Range) =
