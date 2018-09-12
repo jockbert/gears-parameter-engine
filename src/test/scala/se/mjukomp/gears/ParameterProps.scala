@@ -121,6 +121,14 @@ object ParameterProps extends Properties("Parameter") {
     b.functionOf(a, fn) ?= Right(Relation(a, fn, b))
   }
 
+  property("Detect value not in valid range") = {
+    val a = Parameter("A", 3, -1000, 1000)
+
+    all(
+      "valid" |: (a.value(1000) ?= Right(1000)),
+      "invalid" |: (a.value(1001) ?= Left(ValueNotInRange)))
+  }
+
   def equals(
     actual: Parameter,
     value:  Value,

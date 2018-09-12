@@ -15,6 +15,9 @@ object Parameter {
     apply(name, value, Range(min, max))
 }
 
+sealed trait ValueError
+case object ValueNotInRange extends ValueError
+
 case class Parameter(
   name:               String,
   private var _value: Value,
@@ -46,7 +49,10 @@ case class Parameter(
     }
   }
 
-  def value(v: Value): Unit = {
+  def value(v: Value): Either[ValueError, Value] = {
+
+    if (!range.includes(v))
+      return Left(ValueNotInRange)
 
     relationsFrom.foreach(b => {
       val newValue = backtrackValue(v, b.fn, b.from.range)
@@ -56,6 +62,8 @@ case class Parameter(
     _value = v
 
     relationsTo.foreach(b => b.to._value = b.fn(v))
+
+    Right(_value)
   }
 
   def functionOf(

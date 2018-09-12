@@ -11,4 +11,7 @@ case class Range(min: Value, max: Value) {
 
   def map(fn: MonotoneFn) =
     Range(fn(min), fn(max))
+
+  def includes(v: Value) =
+    min <= v && v <= max
 }
