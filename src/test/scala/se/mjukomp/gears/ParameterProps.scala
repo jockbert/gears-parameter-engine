@@ -129,6 +129,18 @@ object ParameterProps extends Properties("Parameter") {
       "invalid" |: (a.value(1001) ?= Left(ValueNotInRange)))
   }
 
+  property("Has static range") = {
+    val a = Parameter("A", 3, -1000, 1000)
+    val b = Parameter("B", 4, -1000, 1000)
+    val fn = (x: Double) => x * 2.0
+
+    b.functionOf(a, fn)
+
+    all(
+      "Dynamic range" |: (a.range ?= Range(-500, 500)),
+      "Static range" |: (a.staticRange ?= Range(-1000, 1000)))
+  }
+
   def equals(
     actual: Parameter,
     value:  Value,

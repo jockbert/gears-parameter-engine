@@ -21,16 +21,18 @@ case object ValueNotInRange extends ValueError
 case class Parameter(
   name:               String,
   private var _value: Value,
-  var range:          Range) {
+  val staticRange:    Range) {
 
+  private var _range = staticRange
   private var relationsFrom: List[Relation] = Nil
   private var relationsTo: List[Relation] = Nil
 
   def min() = range.min
   def max() = range.max
-  def min(v: Value): Unit = range = range.copy(min = v)
-  def max(v: Value): Unit = range = range.copy(max = v)
+  def min(v: Value): Unit = _range = _range.copy(min = v)
+  def max(v: Value): Unit = _range = _range.copy(max = v)
   def value() = _value
+  def range() = _range
 
   @tailrec
   final def backtrackValue(target: Value, fn: MonotoneFn, range: Range): Double = {
@@ -77,8 +79,8 @@ case class Parameter(
     narrowedRange match {
       case None => Left(NoRangeOverlap)
       case Some(newRange) => {
-        this.range = newRange
-        source.range = Range(
+        this._range = newRange
+        source._range = Range(
           backtrackValue(min, fn, source.range),
           backtrackValue(max, fn, source.range))
 
