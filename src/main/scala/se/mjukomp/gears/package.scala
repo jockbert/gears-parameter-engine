@@ -28,4 +28,7 @@ package object gears {
    *  @see https://en.wikipedia.org/wiki/Bisection_method
    */
   type MonotoneFn = Value => Value
+
+  type RangeListener = (Range) => Unit
+  type ValueListener = (Value) => Unit
 }

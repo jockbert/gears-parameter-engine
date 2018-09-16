@@ -4,6 +4,8 @@ import org.scalacheck.Prop
 import org.scalacheck.Prop._
 import org.scalacheck.Properties
 
+import se.mjukomp.gears.Relation._
+
 object ParameterProps extends Properties("Parameter") {
 
   property("Single Value") = {
@@ -11,17 +13,18 @@ object ParameterProps extends Properties("Parameter") {
     equals(single, 2, 0.1, 33)
   }
 
+  /*
   property("Frequency and period example") = {
     val frequency = Parameter("frequency", 5, 1, 100)
     val period = Parameter("period", 33, 0.0002, 20000)
 
     equals(period, 33, 0.0002, 20000) :| "before" && {
 
-      period.inverseFunctionOf(frequency, f => 1 / f)
+      relate(period).asInverseFunctionOf(frequency, f => 1 / f)
 
       equals(period, 0.2, 0.01, 1) :| "after"
     }
-  }
+  }*/
 
   property("Has default range") = {
     val p = Parameter("P", 6)
@@ -38,7 +41,8 @@ object ParameterProps extends Properties("Parameter") {
     val b = Parameter("B", 4, -1000, 1000)
     val fn = (x: Double) => 5 * x + 1
 
-    b.functionOf(a, fn)
+    relate(b).asFunctionOf(a, fn)
+
     b.value(fn(aValue))
 
     a.value ?= aValue
@@ -48,9 +52,10 @@ object ParameterProps extends Properties("Parameter") {
     val aValue = 10;
     val a = Parameter("A", 3, -1000, 1000)
     val b = Parameter("B", 4, -1000, 1000)
-    val fn = (x: Double) => 5 * x + 1
+    val fn = (a: Value) => 5 * a + 1
 
-    b.functionOf(a, fn)
+    relate(b).asFunctionOf(a, fn)
+
     a.value(aValue)
 
     b.value ?= fn(aValue)
@@ -59,9 +64,8 @@ object ParameterProps extends Properties("Parameter") {
   property("Align max restrict target B") = {
     val a = Parameter("A", 3, -1000, 1000)
     val b = Parameter("B", 4, -1000, 1000)
-    val fn = (x: Double) => x - 2
 
-    b.functionOf(a, fn)
+    relate(b).asFunctionOf(a, _ - 2)
 
     all(
       "B max" |: (b.max ?= 998),
@@ -71,9 +75,8 @@ object ParameterProps extends Properties("Parameter") {
   property("Align max restrict source A") = {
     val a = Parameter("A", 3, -1000, 1000)
     val b = Parameter("B", 4, -1000, 1000)
-    val fn = (x: Double) => x + 2
 
-    b.functionOf(a, fn)
+    relate(b).asFunctionOf(a, _ + 2)
 
     all(
       "B max" |: (b.max ?= 1000),
@@ -83,9 +86,8 @@ object ParameterProps extends Properties("Parameter") {
   property("Align min restrict target B") = {
     val a = Parameter("A", 3, -1000, 1000)
     val b = Parameter("B", 4, -1000, 1000)
-    val fn = (x: Double) => x + 2
 
-    b.functionOf(a, fn)
+    relate(b).asFunctionOf(a, _ + 2)
 
     all(
       "B min" |: (b.min ?= -998),
@@ -95,9 +97,8 @@ object ParameterProps extends Properties("Parameter") {
   property("Align min restrict source A") = {
     val a = Parameter("A", 3, -1000, 1000)
     val b = Parameter("B", 4, -1000, 1000)
-    val fn = (x: Double) => x - 2
 
-    b.functionOf(a, fn)
+    relate(b).asFunctionOf(a, _ - 2)
 
     all(
       "B min" |: (b.min ?= -1000),
@@ -109,7 +110,7 @@ object ParameterProps extends Properties("Parameter") {
     val b = Parameter("B", 4, -1000, 1000)
     val fn = (x: Double) => x + 3000
 
-    b.functionOf(a, fn) ?= Left(NoRangeOverlap)
+    relate(b).asFunctionOf(a, fn) ?= Left(NoRangeOverlap)
   }
 
   property("Detect single value range match") = {
@@ -118,7 +119,7 @@ object ParameterProps extends Properties("Parameter") {
     val b = Parameter("B", 4, 10, 1000)
     val fn = (x: Double) => x * 1
 
-    b.functionOf(a, fn) ?= Right(Relation(a, fn, b))
+    relate(b).asFunctionOf(a, fn) ?= Right(BisectingRelation(a, fn, b))
   }
 
   property("Detect value not in valid range") = {
@@ -134,7 +135,7 @@ object ParameterProps extends Properties("Parameter") {
     val b = Parameter("B", 4, -1000, 1000)
     val fn = (x: Double) => x * 2.0
 
-    b.functionOf(a, fn)
+    relate(b).asFunctionOf(a, fn)
 
     all(
       "Dynamic range" |: (a.range ?= Range(-500, 500)),
