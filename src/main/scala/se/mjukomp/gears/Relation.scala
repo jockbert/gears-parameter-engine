@@ -45,11 +45,11 @@ object Relation {
 
 /** The relation between two parameters, given a relation function. */
 sealed trait Relation {
-  def from: Parameter
-  def to: Parameter
+  def source: Parameter
+  def target: Parameter
 
   override def toString(): String =
-    s"Relation(${from.name},${to.name})"
+    s"Relation(${source.name},${target.name})"
 }
 
 object BisectingRelation {
@@ -76,9 +76,9 @@ object BisectingRelation {
 }
 
 case class BisectingRelation(
-  override val from: Parameter,
-  fn:                MonotoneFn,
-  override val to:   Parameter)
+  source: Parameter,
+  fn:     MonotoneFn,
+  target: Parameter)
   extends Relation {
 
   var blockFeedback: Boolean = false
@@ -91,22 +91,22 @@ case class BisectingRelation(
       blockFeedback = false
     }
 
-  val fromRangeListener: RangeListener =
+  val sourceRangeListener: RangeListener =
     (range) => {}
 
-  val fromValueListener: ValueListener =
-    (value) => withoutFeedback(() => to.value(fn(value)))
+  val sourceValueListener: ValueListener =
+    (value) => withoutFeedback(() => target.value(fn(value)))
 
-  val toRangeListener: RangeListener =
+  val targetRangeListener: RangeListener =
     (range) => {}
 
-  val toValueListener: ValueListener =
-    (value) => withoutFeedback(() => from.value(
-      backtrackValue(to.value, fn, from.range)))
+  val targetValueListener: ValueListener =
+    (value) => withoutFeedback(() => source.value(
+      backtrackValue(target.value, fn, source.range)))
 
-  from.registerRangeListener(fromRangeListener)
-  from.registerValueListener(fromValueListener)
-  to.registerRangeListener(toRangeListener)
-  to.registerValueListener(toValueListener)
+  source.registerRangeListener(sourceRangeListener)
+  source.registerValueListener(sourceValueListener)
+  target.registerRangeListener(targetRangeListener)
+  target.registerValueListener(targetValueListener)
 
 }
