@@ -9,10 +9,10 @@ object Parameter {
   val defaultRange: se.mjukomp.gears.Range = Range(valueMin, valueMax)
 
   def apply(name: String, value: Value): Parameter =
-    apply(name, value, defaultRange)
+    apply(name, Amount(value), defaultRange)
 
   def apply(name: String, value: Value, min: Value, max: Value): Parameter =
-    apply(name, value, Range(min, max))
+    apply(name, Amount(value), Range(min, max))
 }
 
 sealed trait ValueError
@@ -20,28 +20,19 @@ case object ValueNotInRange extends ValueError
 
 case class Parameter(
   name:               String,
-  private var _value: Value,
+  private val _value: Amount,
   staticRange:        Range) {
 
-  private var _range = staticRange
+  private val _min = Amount(staticRange.min)
+  private val _max = Amount(staticRange.max)
 
-  private var rangeListeners: List[RangeListener] = Nil
-  private var valueListeners: List[ValueListener] = Nil
-
-  def min: Value = range.min
-  def max: Value = range.max
-  def min(v: Value): Unit = _range = _range.copy(min = v)
-  def max(v: Value): Unit = _range = _range.copy(max = v)
-  def value: Value = _value
-  def range: Range = _range
-  def range(r: Range): Unit = _range = r
-
-  def registerRangeListener(listener: RangeListener): Unit = {
-    rangeListeners = listener :: rangeListeners
-  }
-
-  def registerValueListener(listener: ValueListener): Unit = {
-    valueListeners = listener :: valueListeners
+  def min: Amount = _min
+  def max: Amount = _max
+  def value: Amount = _value
+  def range: Range = Range(_min.value, _max.value)
+  def range(r: Range): Unit = {
+    _min.value(r.min)
+    _max.value(r.max)
   }
 
   def value(v: Value): Either[ValueError, Value] = {
@@ -49,10 +40,8 @@ case class Parameter(
     if (!range.includes(v))
       return Left(ValueNotInRange)
 
-    _value = v
+    _value.value(v)
 
-    valueListeners.foreach(listener => listener(v))
-
-    Right(_value)
+    Right(_value.value)
   }
 }

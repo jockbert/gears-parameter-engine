@@ -7,32 +7,45 @@ import BisectingRelation._
 sealed trait RelationError
 case object NoRangeOverlap extends RelationError
 
+case class OperationalDomain(source: Range, target: Range) {
+  def mergeDomains(fn: MonotoneFn) = {
+    val narrowedTarget = source
+      .map(fn).intersection(target)
+
+    narrowedTarget match {
+      case None => Left(NoRangeOverlap)
+      case Some(newTarget) =>
+        val newSource = Range(
+          backtrackValue(newTarget.min, fn, source),
+          backtrackValue(newTarget.max, fn, source))
+
+        Right(OperationalDomain(newSource, newTarget))
+    }
+  }
+}
+
 case class RelationBuilder(target: Parameter) {
 
   def asFunctionOf(
     source: Parameter,
-    fn:     MonotoneFn): Either[RelationError, Relation] = {
+    fn:     MonotoneFn): Either[RelationError, Unit] = {
 
-    val narrowedRange = source.range
-      .map(fn).intersection(target.range)
+    OperationalDomain(source.staticRange, target.staticRange)
+      .mergeDomains(fn)
+      .map(domain => {
 
-    narrowedRange match {
-      case None => Left(NoRangeOverlap)
-      case Some(newRange) => {
-
-        // Update target value
-        target.value(fn(source.value))
+        target.value(fn(source.value()))
 
         // Update ranges
-        target.range(newRange)
-        source.range(Range(
-          backtrackValue(target.min, fn, source.range),
-          backtrackValue(target.max, fn, source.range)))
+        target.range(domain.target)
+        source.range(domain.source)
 
-        // Create and register relation to parameters
-        Right(BisectingRelation(source, fn, target))
-      }
-    }
+        // Create and register relation between values
+        BisectingRelation(source.min, fn, domain, target.min)
+        BisectingRelation(source.value, fn, domain, target.value)
+        BisectingRelation(source.max, fn, domain, target.max)
+        Right(())
+      })
   }
 }
 
@@ -43,13 +56,10 @@ object Relation {
 
 }
 
-/** The relation between two parameters, given a relation function. */
+/** The relation between two values, given a relation function. */
 sealed trait Relation {
-  def source: Parameter
-  def target: Parameter
-
-  override def toString(): String =
-    s"Relation(${source.name},${target.name})"
+  def source: Amount
+  def target: Amount
 }
 
 object BisectingRelation {
@@ -76,9 +86,10 @@ object BisectingRelation {
 }
 
 case class BisectingRelation(
-  source: Parameter,
+  source: Amount,
   fn:     MonotoneFn,
-  target: Parameter)
+  domain: OperationalDomain,
+  target: Amount)
   extends Relation {
 
   var blockFeedback: Boolean = false
@@ -91,22 +102,13 @@ case class BisectingRelation(
       blockFeedback = false
     }
 
-  val sourceRangeListener: RangeListener =
-    (range) => {}
-
   val sourceValueListener: ValueListener =
     (value) => withoutFeedback(() => target.value(fn(value)))
 
-  val targetRangeListener: RangeListener =
-    (range) => {}
-
   val targetValueListener: ValueListener =
     (value) => withoutFeedback(() => source.value(
-      backtrackValue(target.value, fn, source.range)))
+      backtrackValue(target.value, fn, domain.source)))
 
-  source.registerRangeListener(sourceRangeListener)
-  source.registerValueListener(sourceValueListener)
-  target.registerRangeListener(targetRangeListener)
-  target.registerValueListener(targetValueListener)
-
+  source.addListener(sourceValueListener)
+  target.addListener(targetValueListener)
 }
