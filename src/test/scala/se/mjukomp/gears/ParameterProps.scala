@@ -13,19 +13,6 @@ object ParameterProps extends Properties("Parameter") {
     equals(single, 2, 0.1, 33)
   }
 
-  /*
-  property("Frequency and period example") = {
-    val frequency = Parameter("frequency", 5, 1, 100)
-    val period = Parameter("period", 33, 0.0002, 20000)
-
-    equals(period, 33, 0.0002, 20000) :| "before" && {
-
-      relate(period).asInverseFunctionOf(frequency, f => 1 / f)
-
-      equals(period, 0.2, 0.01, 1) :| "after"
-    }
-  }*/
-
   property("Has default range") = {
     val p = Parameter("P", 6)
 
@@ -147,8 +134,7 @@ object ParameterProps extends Properties("Parameter") {
     value:  Value,
     min:    Value,
     max:    Value) =
-
-    ((actual.min.get() ?= min) :| (actual.name + " minimum")) &&
-      ((actual.value.get() ?= value) :| (actual.name + " value")) &&
-      ((actual.max.get() ?= max) :| (actual.name + " maximum"))
+    (actual.name + " minimum" |: (actual.min.get() ?= min)) &&
+      (actual.name + " value" |: (actual.value.get() ?= value)) &&
+      (actual.name + " maximum" |: (actual.max.get() ?= max))
 }
