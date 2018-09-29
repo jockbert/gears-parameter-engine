@@ -29,20 +29,20 @@ case class Parameter(
   private val _max = Amount(staticRange.max)
 
   _min.addMinLimit(() => staticRange.min)
-  _min.addMaxLimit(() => _value())
+  _min.addMaxLimit(() => _value.get())
 
-  _value.addMaxLimit(() => _max())
-  _value.addMinLimit(() => _min())
+  _value.addMaxLimit(() => _max.get())
+  _value.addMinLimit(() => _min.get())
 
-  _max.addMinLimit(() => _value())
+  _max.addMinLimit(() => _value.get())
   _max.addMaxLimit(() => staticRange.max)
 
   def min: Amount = _min
   def max: Amount = _max
   def value: Amount = _value
-  def range: Range = Range(_min.value, _max.value)
+  def range: Range = Range(_min.get(), _max.get())
   def range(r: Range): Unit = {
-    _min.value(r.min)
-    _max.value(r.max)
+    _min.set(r.min)
+    _max.set(r.max)
   }
 }

@@ -30,9 +30,9 @@ object ParameterProps extends Properties("Parameter") {
     val p = Parameter("P", 6)
 
     all(
-      "min" |: (p.min() ?= Parameter.defaultRange.min),
-      "value" |: (p.value() ?= 6),
-      "max" |: (p.max() ?= Parameter.defaultRange.max))
+      "min" |: (p.min.get() ?= Parameter.defaultRange.min),
+      "value" |: (p.value.get() ?= 6),
+      "max" |: (p.max.get() ?= Parameter.defaultRange.max))
   }
 
   property("Backtrack function inverse") = {
@@ -43,9 +43,9 @@ object ParameterProps extends Properties("Parameter") {
 
     relate(b).asFunctionOf(a, fn)
 
-    b.value(fn(aValue))
+    b.value.set(fn(aValue))
 
-    a.value() ?= aValue
+    a.value.get() ?= aValue
   }
 
   property("Propagate function value") = {
@@ -56,9 +56,9 @@ object ParameterProps extends Properties("Parameter") {
 
     relate(b).asFunctionOf(a, fn)
 
-    a.value(aValue)
+    a.value.set(aValue)
 
-    b.value() ?= fn(aValue)
+    b.value.get() ?= fn(aValue)
   }
 
   property("Align max restrict target B") = {
@@ -68,8 +68,8 @@ object ParameterProps extends Properties("Parameter") {
     relate(b).asFunctionOf(a, _ - 2)
 
     all(
-      "B max" |: (b.max() ?= 998),
-      "A max" |: (a.max() ?= 1000))
+      "B max" |: (b.max.get() ?= 998),
+      "A max" |: (a.max.get() ?= 1000))
   }
 
   property("Align max restrict source A") = {
@@ -79,8 +79,8 @@ object ParameterProps extends Properties("Parameter") {
     relate(b).asFunctionOf(a, _ + 2)
 
     all(
-      "B max" |: (b.max() ?= 1000),
-      "A max" |: (a.max() ?= 998))
+      "B max" |: (b.max.get() ?= 1000),
+      "A max" |: (a.max.get() ?= 998))
   }
 
   property("Align min restrict target B") = {
@@ -90,8 +90,8 @@ object ParameterProps extends Properties("Parameter") {
     relate(b).asFunctionOf(a, _ + 2)
 
     all(
-      "B min" |: (b.min() ?= -998),
-      "A min" |: (a.min() ?= -1000))
+      "B min" |: (b.min.get() ?= -998),
+      "A min" |: (a.min.get() ?= -1000))
   }
 
   property("Align min restrict source A") = {
@@ -101,8 +101,8 @@ object ParameterProps extends Properties("Parameter") {
     relate(b).asFunctionOf(a, _ - 2)
 
     all(
-      "B min" |: (b.min() ?= -1000),
-      "A min" |: (a.min() ?= -998))
+      "B min" |: (b.min.get() ?= -1000),
+      "A min" |: (a.min.get() ?= -998))
   }
 
   property("Detect range missmatch") = {
@@ -126,8 +126,8 @@ object ParameterProps extends Properties("Parameter") {
     val a = Parameter("A", 3, -1000, 1000)
 
     all(
-      "valid" |: (a.value(1000) ?= Right(Amount(1000))),
-      "invalid" |: (a.value(1001) ?= Left(OutsideMaxLimit)))
+      "valid" |: (a.value.set(1000) ?= Right(Amount(1000))),
+      "invalid" |: (a.value.set(1001) ?= Left(OutsideMaxLimit)))
   }
 
   property("Has static range") = {
@@ -148,7 +148,7 @@ object ParameterProps extends Properties("Parameter") {
     min:    Value,
     max:    Value) =
 
-    ((actual.min() ?= min) :| (actual.name + " minimum")) &&
-      ((actual.value() ?= value) :| (actual.name + " value")) &&
-      ((actual.max() ?= max) :| (actual.name + " maximum"))
+    ((actual.min.get() ?= min) :| (actual.name + " minimum")) &&
+      ((actual.value.get() ?= value) :| (actual.name + " value")) &&
+      ((actual.max.get() ?= max) :| (actual.name + " maximum"))
 }

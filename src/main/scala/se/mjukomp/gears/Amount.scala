@@ -8,11 +8,8 @@ case class Amount(private var _value: Value) {
   var maxLimits: List[Limit] = Nil
   var minLimits: List[Limit] = Nil
 
-  def apply(): Value = _value
-  def value(): Value = _value
-  def apply(newValue: Value): Either[ValueError, Amount] =
-    value(newValue)
-  def value(newValue: Value): Either[ValueError, Amount] =
+  def get(): Value = _value
+  def set(newValue: Value): Either[ValueError, Amount] =
     (newValue, minLimit(), maxLimit()) match {
       case (v, Some(min), _) if v < min => Left(OutsideMinLimit)
       case (v, _, Some(max)) if v > max => Left(OutsideMaxLimit)

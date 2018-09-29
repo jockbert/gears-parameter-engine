@@ -34,7 +34,7 @@ case class RelationBuilder(target: Parameter) {
       .mergeDomains(fn)
       .map(domain => {
 
-        target.value(fn(source.value()))
+        target.value.set(fn(source.value.get()))
 
         // Update ranges
         target.range(domain.target)
@@ -103,11 +103,11 @@ case class BisectingRelation(
     }
 
   val sourceValueListener: ValueListener =
-    (value) => withoutFeedback(() => target.value(fn(value)))
+    (value) => withoutFeedback(() => target.set(fn(value)))
 
   val targetValueListener: ValueListener =
-    (value) => withoutFeedback(() => source.value(
-      backtrackValue(target.value, fn, domain.source)))
+    (value) => withoutFeedback(() => source.set(
+      backtrackValue(target.get(), fn, domain.source)))
 
   source.addListener(sourceValueListener)
   target.addListener(targetValueListener)

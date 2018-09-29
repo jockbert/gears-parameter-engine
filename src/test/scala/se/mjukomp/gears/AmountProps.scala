@@ -6,14 +6,14 @@ import org.scalacheck.Properties
 object AmountProps extends Properties("Amount") {
 
   property("Has a value") =
-    Amount(4.3).value ?= 4.3
+    Amount(4.3).get() ?= 4.3
 
   property("Can register listener") = {
     var notified: Value = 0.0
 
-    Amount(3.3).
-      addListener(notified = _)
-      .value(55.5)
+    Amount(3.3)
+      .addListener(notified = _)
+      .set(55.5)
 
     notified ?= 55.5
   }
@@ -33,11 +33,11 @@ object AmountProps extends Properties("Amount") {
   property("Can not set outside of min limit") =
     Amount(3.3)
       .addMinLimit(() => 1.0)
-      .value(0.9999) ?= Left(OutsideMinLimit)
+      .set(0.9999) ?= Left(OutsideMinLimit)
 
   property("Can not set outside of max limit") =
     Amount(3.3)
       .addMaxLimit(() => 4.0)
-      .value(4.00001) ?= Left(OutsideMaxLimit)
+      .set(4.00001) ?= Left(OutsideMaxLimit)
 
 }
