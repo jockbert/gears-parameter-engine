@@ -28,6 +28,15 @@ case class Parameter(
   private val _min = Amount(staticRange.min)
   private val _max = Amount(staticRange.max)
 
+  _min.addMinLimit(() => staticRange.min)
+  _min.addMaxLimit(() => _value())
+
+  _value.addMaxLimit(() => _max())
+  _value.addMinLimit(() => _min())
+
+  _max.addMinLimit(() => _value())
+  _max.addMaxLimit(() => staticRange.max)
+
   def min: Amount = _min
   def max: Amount = _max
   def value: Amount = _value
@@ -35,15 +44,5 @@ case class Parameter(
   def range(r: Range): Unit = {
     _min.value(r.min)
     _max.value(r.max)
-  }
-
-  def value(v: Value): Either[ValueError, Value] = {
-
-    if (!range.includes(v))
-      return Left(ValueNotInRange)
-
-    _value.value(v)
-
-    Right(_value.value)
   }
 }

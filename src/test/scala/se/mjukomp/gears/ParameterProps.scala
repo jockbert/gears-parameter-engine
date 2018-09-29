@@ -126,8 +126,8 @@ object ParameterProps extends Properties("Parameter") {
     val a = Parameter("A", 3, -1000, 1000)
 
     all(
-      "valid" |: (a.value(1000) ?= Right(1000)),
-      "invalid" |: (a.value(1001) ?= Left(ValueNotInRange)))
+      "valid" |: (a.value(1000) ?= Right(Amount(1000))),
+      "invalid" |: (a.value(1001) ?= Left(OutsideMaxLimit)))
   }
 
   property("Has static range") = {
