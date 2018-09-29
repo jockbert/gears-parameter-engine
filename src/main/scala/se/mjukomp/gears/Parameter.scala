@@ -17,6 +17,8 @@ object Parameter {
 
 sealed trait ValueError
 case object ValueNotInRange extends ValueError
+case object OutsideMaxLimit extends ValueError
+case object OutsideMinLimit extends ValueError
 
 case class Parameter(
   name:               String,

@@ -10,11 +10,18 @@ case class Amount(
 
   def apply(): Value = _value
   def value(): Value = _value
-  def value(newValue: Value): Amount = {
-    _value = newValue
-    listeners.foreach(l => l(newValue))
-    this
-  }
+  def value(newValue: Value): Either[ValueError, Amount] =
+    (newValue, minLimit(), maxLimit()) match {
+      case (v, Some(min), _) if v < min => Left(OutsideMinLimit)
+      case (v, _, Some(max)) if v > max => Left(OutsideMaxLimit)
+      case (v, _, _) => {
+
+        _value = newValue
+        listeners.foreach(l => l(newValue))
+
+        Right(this)
+      }
+    }
 
   def addListener(listener: ValueListener): Amount = {
     listeners = listener :: listeners
