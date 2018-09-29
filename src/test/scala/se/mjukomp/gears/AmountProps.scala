@@ -17,4 +17,17 @@ object AmountProps extends Properties("Amount") {
 
     notified ?= 55.5
   }
+
+  property("Has max limit") =
+    Amount(3.3)
+      .addMaxLimit(() => 5.0)
+      .addMaxLimit(() => 7.7)
+      .maxLimit() ?= Some(5.0)
+
+  property("Has min limit") =
+    Amount(3.3)
+      .addMinLimit(() => 1.0)
+      .addMinLimit(() => 2.7)
+      .minLimit() ?= Some(2.7)
+
 }

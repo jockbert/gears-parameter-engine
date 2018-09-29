@@ -31,4 +31,5 @@ package object gears {
 
   type RangeListener = (Range) => Unit
   type ValueListener = (Value) => Unit
+  type Limit = () => Value
 }
