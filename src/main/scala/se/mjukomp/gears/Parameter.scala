@@ -16,9 +16,15 @@ object Parameter {
 }
 
 sealed trait ValueError
-case object ValueNotInRange extends ValueError
-case object OutsideMaxLimit extends ValueError
-case object OutsideMinLimit extends ValueError
+case class OutsideMaxLimit(
+  violator:      Value,
+  description:   String,
+  violatedLimit: Value) extends ValueError
+
+case class OutsideMinLimit(
+  violator:      Value,
+  description:   String,
+  violatedLimit: Value) extends ValueError
 
 case class Parameter(
   name:               String,
@@ -28,14 +34,14 @@ case class Parameter(
   private val _min = Amount(staticRange.min)
   private val _max = Amount(staticRange.max)
 
-  _min.addMinLimit(() => staticRange.min)
-  _min.addMaxLimit(() => _value.get())
+  _min.addMinLimit(Limit(() => staticRange.min, s"$name static min"))
+  _min.addMaxLimit(Limit(() => _value.get(), s"$name value"))
 
-  _value.addMaxLimit(() => _max.get())
-  _value.addMinLimit(() => _min.get())
+  _value.addMaxLimit(Limit(() => _max.get(), s"$name max"))
+  _value.addMinLimit(Limit(() => _min.get(), s"$name min"))
 
-  _max.addMinLimit(() => _value.get())
-  _max.addMaxLimit(() => staticRange.max)
+  _max.addMinLimit(Limit(() => _value.get(), s"$name value"))
+  _max.addMaxLimit(Limit(() => staticRange.max, s"$name static max"))
 
   def min: Amount = _min
   def max: Amount = _max

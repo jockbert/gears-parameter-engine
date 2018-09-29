@@ -20,24 +20,23 @@ object AmountProps extends Properties("Amount") {
 
   property("Has max limit") =
     Amount(3.3)
-      .addMaxLimit(() => 5.0)
-      .addMaxLimit(() => 7.7)
+      .addMaxLimit(Limit(() => 5.0, "Foo"))
+      .addMaxLimit(Limit(() => 7.7, "Bar"))
       .maxLimit() ?= Some(5.0)
 
   property("Has min limit") =
     Amount(3.3)
-      .addMinLimit(() => 1.0)
-      .addMinLimit(() => 2.7)
+      .addMinLimit(Limit(() => 1.0, "Foo"))
+      .addMinLimit(Limit(() => 2.7, "Bar"))
       .minLimit() ?= Some(2.7)
 
   property("Can not set outside of min limit") =
     Amount(3.3)
-      .addMinLimit(() => 1.0)
-      .set(0.9999) ?= Left(OutsideMinLimit)
+      .addMinLimit(Limit(() => 1.0, "Foo"))
+      .set(0.9999) ?= Left(OutsideMinLimit(0.9999, "Foo", 1.0))
 
   property("Can not set outside of max limit") =
     Amount(3.3)
-      .addMaxLimit(() => 4.0)
-      .set(4.00001) ?= Left(OutsideMaxLimit)
-
+      .addMaxLimit(Limit(() => 4.0, "Baz"))
+      .set(4.00001) ?= Left(OutsideMaxLimit(4.00001, "Baz", 4.0))
 }

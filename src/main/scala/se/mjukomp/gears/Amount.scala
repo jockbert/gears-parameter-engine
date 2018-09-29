@@ -10,9 +10,11 @@ case class Amount(private var _value: Value) {
 
   def get(): Value = _value
   def set(newValue: Value): Either[ValueError, Amount] =
-    (newValue, minLimit(), maxLimit()) match {
-      case (v, Some(min), _) if v < min => Left(OutsideMinLimit)
-      case (v, _, Some(max)) if v > max => Left(OutsideMaxLimit)
+    (newValue, minLimitObj(), maxLimitObj()) match {
+      case (v, Some(limit), _) if v < limit.value() =>
+        Left(OutsideMinLimit(v, limit.description, limit.value()))
+      case (v, _, Some(limit)) if v > limit.value() =>
+        Left(OutsideMaxLimit(v, limit.description, limit.value()))
       case (v, _, _) => {
 
         _value = newValue
@@ -32,14 +34,20 @@ case class Amount(private var _value: Value) {
     this
   }
 
+  private def maxLimitObj(): Option[Limit] =
+    maxLimits.sortWith(_.value() < _.value()).headOption
+
   def maxLimit(): Option[Value] =
-    maxLimits.map(l => l()).sortWith(_ < _).headOption
+    maxLimits.map(l => l.value()).sortWith(_ < _).headOption
 
   def addMinLimit(limit: Limit): Amount = {
     minLimits = limit :: minLimits
     this
   }
 
+  private def minLimitObj(): Option[Limit] =
+    minLimits.sortWith(_.value() > _.value()).headOption
+
   def minLimit(): Option[Value] =
-    minLimits.map(l => l()).sortWith(_ > _).headOption
+    minLimits.map(l => l.value()).sortWith(_ > _).headOption
 }

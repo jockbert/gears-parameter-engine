@@ -114,7 +114,7 @@ object ParameterProps extends Properties("Parameter") {
 
     all(
       "valid" |: (a.value.set(1000) ?= Right(Amount(1000))),
-      "invalid" |: (a.value.set(1001) ?= Left(OutsideMaxLimit)))
+      "invalid" |: (a.value.set(1001) ?= Left(OutsideMaxLimit(1001, "A max", 1000))))
   }
 
   property("Has static range") = {
