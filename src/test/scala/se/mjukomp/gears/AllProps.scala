@@ -7,4 +7,5 @@ object AllProps extends Properties("gears") {
   include(ParameterProps)
   include(AmountProps)
   include(InverseFunctionProps)
+  include(BacktrackingProps)
 }

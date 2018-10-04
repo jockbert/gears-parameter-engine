@@ -28,8 +28,8 @@ case class RelationBuilder(target: Parameter) {
 
   def asFunctionOf(
     source: Parameter,
-    fn:     MonotoneFn): Either[RelationError, Unit] =
-    OperationalDomain(source.staticRange, target.staticRange)
+    fn:     MonotoneFn): Either[RelationError, RelationBuilder] =
+    OperationalDomain(source.range, target.range)
       .mergeDomains(fn)
       .map(domain => {
 
@@ -43,7 +43,7 @@ case class RelationBuilder(target: Parameter) {
         BisectingRelation(source.min, fn, domain, target.min)
         BisectingRelation(source.value, fn, domain, target.value)
         BisectingRelation(source.max, fn, domain, target.max)
-        Right(())
+        RelationBuilder(source)
       })
 
   def asInverseFunctionOf(

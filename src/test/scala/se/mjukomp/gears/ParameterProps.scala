@@ -106,7 +106,7 @@ object ParameterProps extends Properties("Parameter") {
     val b = Parameter("B", 4, 10, 1000)
     val fn = (x: Double) => x * 1
 
-    relate(b).asFunctionOf(a, fn) ?= Right(())
+    relate(b).asFunctionOf(a, fn) ?= Right(RelationBuilder(a))
   }
 
   property("Detect value not in valid range") = {
@@ -127,6 +127,26 @@ object ParameterProps extends Properties("Parameter") {
     all(
       "Dynamic range" |: (a.range ?= Range(-500, 500)),
       "Static range" |: (a.staticRange ?= Range(-1000, 1000)))
+  }
+
+  property("parameter series") = {
+    val a = Parameter("A", 4, -100, 100)
+    val b = Parameter("B", 4, -100, 100)
+    val c = Parameter("C", 4, -100, 100)
+    val d = Parameter("C", 4, -100, 100)
+    val fn = (x: Double) => x + 10.0
+
+    relate(c).asFunctionOf(b, fn)
+    relate(d).asFunctionOf(c, fn)
+    relate(b).asFunctionOf(a, fn)
+
+    b.value.set(62.0)
+
+    all(
+      "A" |: equals(a, 52.0, -100, 70),
+      "B" |: equals(b, 62.0, -90, 80),
+      "C" |: equals(c, 72.0, -80, 90),
+      "D" |: equals(d, 82.0, -70, 100))
   }
 
   def equals(
