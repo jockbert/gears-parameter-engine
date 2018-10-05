@@ -129,6 +129,19 @@ object ParameterProps extends Properties("Parameter") {
       "Static range" |: (a.staticRange ?= Range(-1000, 1000)))
   }
 
+  property("Revert to static range when removing relation") = {
+    val a = Parameter("A", 3, -1000, 1000)
+    val b = Parameter("B", 4, -1000, 1000)
+    val fn = (x: Double) => x * 2.0
+
+    val Right(relation) =
+      relate(b).asFunctionOf(a, fn)
+
+    relation.unregister()
+
+    "Reverted dynamic range" |: (a.range ?= Range(-1000, 1000))
+  }
+
   property("parameter series") = {
     val a = Parameter("A", 4, -100, 100)
     val b = Parameter("B", 4, -100, 100)
