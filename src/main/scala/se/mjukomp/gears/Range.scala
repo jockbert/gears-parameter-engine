@@ -3,6 +3,8 @@ package se.mjukomp.gears
 object Range {
   def apply(a: Value, b: Value) =
     if (a < b) new Range(a, b) else new Range(b, a)
+
+  val ALL = Range(Double.MinValue, Double.MaxValue)
 }
 
 /** A value range (i.e. closed interval). */

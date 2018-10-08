@@ -83,11 +83,37 @@ sealed trait Relation {
 
 object BisectingRelation {
 
-  @tailrec
   final def backtrackValue(
     target: Value,
     fn:     MonotoneFn,
-    range:  Range): Value = {
+    range:  Range      = Range.ALL): Value =
+    backtrackMinValue(target, fn, range)
+
+  @tailrec
+  final def backtrackMinValue(
+    target: Value,
+    fn:     MonotoneFn,
+    range:  Range      = Range.ALL): Value = {
+
+    if (range.min + math.ulp(range.min) >= range.max) {
+      if (fn(range.min) < target) range.max else range.min
+    } else {
+      val middle = (range.min + range.max) / 2
+      val middleIsSmall = fn(middle) < target
+
+      val newRange =
+        if (middleIsSmall) range.copy(min = middle)
+        else range.copy(max = middle)
+
+      backtrackMinValue(target, fn, newRange)
+    }
+  }
+
+  @tailrec
+  final def backtrackMaxValue(
+    target: Value,
+    fn:     MonotoneFn,
+    range:  Range      = Range.ALL): Value = {
 
     if (range.min + math.ulp(range.min) >= range.max) {
       if (fn(range.min) < target) range.max else range.min
@@ -99,7 +125,7 @@ object BisectingRelation {
         if (middleIsLarge) range.copy(max = middle)
         else range.copy(min = middle)
 
-      backtrackValue(target, fn, newRange)
+      backtrackMaxValue(target, fn, newRange)
     }
   }
 }
