@@ -100,12 +100,11 @@ object BisectingRelation {
   final def backtrackMinValue(
     target: Value,
     fn:     MonotoneFn,
-    range:  Range      = Range.ALL): Value = {
-
+    range:  Range      = Range.ALL): Value =
     if (range.min + math.ulp(range.min) >= range.max) {
       if (fn(range.min) < target) range.max else range.min
     } else {
-      val middle = (range.min + range.max) / 2
+      val middle = range.min / 2 + range.max / 2
       val middleIsSmall = fn(middle) < target
 
       val newRange =
@@ -113,19 +112,18 @@ object BisectingRelation {
         else range.copy(max = middle)
 
       backtrackMinValue(target, fn, newRange)
+
     }
-  }
 
   @tailrec
   final def backtrackMaxValue(
     target: Value,
     fn:     MonotoneFn,
-    range:  Range      = Range.ALL): Value = {
-
+    range:  Range      = Range.ALL): Value =
     if (range.min + math.ulp(range.min) >= range.max) {
       if (fn(range.min) < target) range.max else range.min
     } else {
-      val middle = (range.min + range.max) / 2
+      val middle = range.min / 2 + range.max / 2
       val middleIsLarge = fn(middle) > target
 
       val newRange =
@@ -134,7 +132,6 @@ object BisectingRelation {
 
       backtrackMaxValue(target, fn, newRange)
     }
-  }
 }
 
 case class BisectingRelation(
