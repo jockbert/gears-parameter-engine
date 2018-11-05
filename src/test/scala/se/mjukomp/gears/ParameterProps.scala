@@ -149,6 +149,42 @@ object ParameterProps extends Properties("Parameter") {
       "D" |: equals(d, 82.0, -70, 100))
   }
 
+  property("backtrack prefer min") =
+    backtrackPreferenceProp(BacktrackPreference.MIN, 0.49, 0.50)
+
+  property("backtrack prefer max") =
+    backtrackPreferenceProp(BacktrackPreference.MAX, 2.49, 2.50)
+
+  property("backtrack prefer mid") =
+    backtrackPreferenceProp(BacktrackPreference.MID, 1.49, 1.50)
+
+  property("backtrack prefer low integer") =
+    backtrackPreferenceProp(BacktrackPreference.LO_INT, 1.0, 1.0)
+
+  property("backtrack prefer low integer") =
+    backtrackPreferenceProp(BacktrackPreference.HI_INT, 2.0, 2.0)
+
+  def backtrackPreferenceProp(
+    preference:   BacktrackPreference,
+    backtrackMin: Value,
+    backtrackMax: Value): Prop = {
+
+    val a = Parameter("A", 4)
+    val b = Parameter("B", 4)
+
+    relate(b).asFunctionOf(
+      a,
+      x => Math.round((x + 0.5) / 2),
+      preference)
+
+    b.value.set(1)
+
+    val aValue = a.value.get()
+    all(
+      s"$aValue <= $backtrackMax" |: aValue <= backtrackMax,
+      s"$aValue >= $backtrackMin" |: aValue >= backtrackMin)
+  }
+
   def equals(
     actual: Parameter,
     value:  Value,

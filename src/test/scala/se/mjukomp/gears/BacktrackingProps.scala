@@ -32,10 +32,8 @@ object BacktrackingProps extends Properties("Backtracking") {
     addition: Double) => {
 
     val fn = (x: Double) => x + addition
-
     val target = source + addition
-
-    val backtrackedSource = BisectingRelation.backtrackValue(target, fn, Range(Double.MinValue, Double.MaxValue))
+    val backtrackedSource = BisectingRelation.backtrackValue(target, fn)
 
     fn(backtrackedSource) ?= target
   })

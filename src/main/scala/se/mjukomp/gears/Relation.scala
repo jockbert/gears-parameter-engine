@@ -3,12 +3,15 @@ package se.mjukomp.gears
 import scala.annotation.tailrec
 
 import BisectingRelation._
+import BacktrackPreference._
 
 sealed trait RelationError
 case object NoRangeOverlap extends RelationError
 
 case class OperationalDomain(source: Range, target: Range) {
-  def mergeDomains(fn: MonotoneFn) = {
+  def mergeDomains(
+    fn:         MonotoneFn,
+    preference: BacktrackPreference) = {
     val narrowedTarget = source
       .map(fn).intersection(target)
 
@@ -16,8 +19,8 @@ case class OperationalDomain(source: Range, target: Range) {
       case None => Left(NoRangeOverlap)
       case Some(newTarget) =>
         val newSource = Range(
-          backtrackValue(newTarget.min, fn, source),
-          backtrackValue(newTarget.max, fn, source))
+          backtrackValue(newTarget.min, fn, source, preference),
+          backtrackValue(newTarget.max, fn, source, preference))
 
         Right(OperationalDomain(newSource, newTarget))
     }
@@ -27,10 +30,11 @@ case class OperationalDomain(source: Range, target: Range) {
 case class RelationBuilder(target: Parameter) {
 
   def asFunctionOf(
-    source: Parameter,
-    fn:     MonotoneFn): Either[RelationError, RelationBuilder] =
+    source:     Parameter,
+    fn:         MonotoneFn,
+    preference: BacktrackPreference = MIN): Either[RelationError, RelationBuilder] =
     OperationalDomain(source.range, target.range)
-      .mergeDomains(fn)
+      .mergeDomains(fn, preference)
       .map(domain => {
 
         target.value.set(fn(source.value.get()))
@@ -40,17 +44,18 @@ case class RelationBuilder(target: Parameter) {
         source.range(domain.source)
 
         // Create and register relation between values
-        BisectingRelation(source.min, fn, domain, target.min)
-        BisectingRelation(source.value, fn, domain, target.value)
-        BisectingRelation(source.max, fn, domain, target.max)
+        BisectingRelation(source.min, fn, domain, target.min, preference)
+        BisectingRelation(source.value, fn, domain, target.value, preference)
+        BisectingRelation(source.max, fn, domain, target.max, preference)
         RelationBuilder(source)
       })
 
   def asInverseFunctionOf(
-    source: Parameter,
-    fn:     MonotoneFn): Either[RelationError, Unit] =
+    source:     Parameter,
+    fn:         MonotoneFn,
+    preference: BacktrackPreference = MIN): Either[RelationError, Unit] =
     OperationalDomain(source.staticRange, target.staticRange)
-      .mergeDomains(fn)
+      .mergeDomains(fn, preference)
       .map(domain => {
 
         target.value.set(fn(source.value.get()))
@@ -60,12 +65,11 @@ case class RelationBuilder(target: Parameter) {
         source.range(domain.source)
 
         // Create and register relation between values
-        BisectingRelation(source.min, fn, domain, target.max)
-        BisectingRelation(source.value, fn, domain, target.value)
-        BisectingRelation(source.max, fn, domain, target.min)
+        BisectingRelation(source.min, fn, domain, target.max, preference)
+        BisectingRelation(source.value, fn, domain, target.value, preference)
+        BisectingRelation(source.max, fn, domain, target.min, preference)
         Right(())
       })
-
 }
 
 object Relation {
@@ -83,11 +87,14 @@ sealed trait Relation {
 
 object BisectingRelation {
 
-  final def backtrackValue(
-    target: Value,
-    fn:     MonotoneFn,
-    range:  Range      = Range.ALL): Value =
-    backtrackMinValue(target, fn, range)
+  def backtrackValue(
+    target:     Value,
+    fn:         MonotoneFn,
+    range:      Range               = Range.ALL,
+    preference: BacktrackPreference = MinimumPreference) =
+    preference.apply(
+      () => backtrackMinValue(target, fn, range),
+      () => backtrackMaxValue(target, fn, range))
 
   @tailrec
   final def backtrackMinValue(
@@ -131,10 +138,11 @@ object BisectingRelation {
 }
 
 case class BisectingRelation(
-  source: Amount,
-  fn:     MonotoneFn,
-  domain: OperationalDomain,
-  target: Amount)
+  source:     Amount,
+  fn:         MonotoneFn,
+  domain:     OperationalDomain,
+  target:     Amount,
+  preference: BacktrackPreference)
   extends Relation {
 
   var blockFeedback: Boolean = false
@@ -151,8 +159,12 @@ case class BisectingRelation(
     (value) => withoutFeedback(() => target.set(fn(value)))
 
   val targetValueListener: ValueListener =
-    (value) => withoutFeedback(() => source.set(
-      backtrackValue(target.get(), fn, domain.source)))
+    (value) => withoutFeedback(() => {
+      val preferedValue = preference.apply(
+        () => backtrackMinValue(target.get(), fn, domain.source),
+        () => backtrackMaxValue(target.get(), fn, domain.source))
+      source.set(preferedValue)
+    })
 
   source.addListener(sourceValueListener)
   target.addListener(targetValueListener)
