@@ -8,4 +8,5 @@ object AllProps extends Properties("gears") {
   include(AmountProps)
   include(InverseFunctionProps)
   include(BacktrackingProps)
+  include(BacktrackPreferenceProps)
 }
