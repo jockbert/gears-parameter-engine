@@ -27,6 +27,16 @@ object BacktrackingProps extends Properties("Backtracking") {
       "is the largest" |: (fn(result + Math.ulp(result)) ?= 2.0))
   }
 
+  property("infinity") = throws(classOf[RuntimeException]) {
+    BisectingRelation.backtrackMinValue(
+      1, n => n, Range(Double.NegativeInfinity, 10))
+  }
+
+  property("not a number") = throws(classOf[RuntimeException]) {
+    BisectingRelation.backtrackMaxValue(
+      1, n => n, Range(-22, Double.NaN))
+  }
+
   property("backtracking addition") = forAll((
     source: Double,
     addition: Double) => {

@@ -96,42 +96,45 @@ object BisectingRelation {
       () => backtrackMinValue(target, fn, range),
       () => backtrackMaxValue(target, fn, range))
 
-  @tailrec
-  final def backtrackMinValue(
-    target: Value,
-    fn:     MonotoneFn,
-    range:  Range      = Range.ALL): Value =
-    if (range.min + math.ulp(range.min) >= range.max) {
-      if (fn(range.min) < target) range.max else range.min
-    } else {
-      val middle = range.min / 2 + range.max / 2
-      val middleIsSmall = fn(middle) < target
+  def backtrackMinValue(
+    target:     Value,
+    fn:         MonotoneFn,
+    inputRange: Range      = Range.ALL): Value =
+    backtrack(target, fn, inputRange, target <= _)
 
-      val newRange =
-        if (middleIsSmall) range.copy(min = middle)
-        else range.copy(max = middle)
+  def backtrackMaxValue(
+    target:     Value,
+    fn:         MonotoneFn,
+    inputRange: Range      = Range.ALL): Value =
+    backtrack(target, fn, inputRange, target < _)
 
-      backtrackMinValue(target, fn, newRange)
+  private def backtrack(
+    target:     Value,
+    fn:         MonotoneFn,
+    inputRange: Range              = Range.ALL,
+    goLow:      (Value) => Boolean): Value = {
 
-    }
+    @tailrec
+    def search(range: Range): Value =
+      if (range.min + math.ulp(range.min) >= range.max) {
+        if (fn(range.min) < target) range.max else range.min
+      } else {
+        val middle = range.min / 2 + range.max / 2
+        val newRange =
+          if (goLow(fn(middle))) Range(range.min, middle)
+          else Range(middle, range.max)
+        search(newRange)
+      }
 
-  @tailrec
-  final def backtrackMaxValue(
-    target: Value,
-    fn:     MonotoneFn,
-    range:  Range      = Range.ALL): Value =
-    if (range.min + math.ulp(range.min) >= range.max) {
-      if (fn(range.min) < target) range.max else range.min
-    } else {
-      val middle = range.min / 2 + range.max / 2
-      val middleIsLarge = fn(middle) > target
+    if (isSearchable(inputRange)) search(inputRange)
+    else throw new RuntimeException(s"Bad backtrack range $inputRange.")
+  }
 
-      val newRange =
-        if (middleIsLarge) range.copy(max = middle)
-        else range.copy(min = middle)
+  private def isSearchable(range: Range): Boolean =
+    isSearchable(range.min) && isSearchable(range.max)
 
-      backtrackMaxValue(target, fn, newRange)
-    }
+  private def isSearchable(value: Value): Boolean =
+    !value.isInfinite() && !value.isNaN()
 }
 
 case class BisectingRelation(
