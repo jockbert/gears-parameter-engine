@@ -3,11 +3,11 @@ package se.mjukomp.gears
 import org.scalacheck.Prop._
 import org.scalacheck.Properties
 
-object BacktrackingProps extends Properties("Backtracking") {
+object BisectionProps extends Properties("Bisection") {
 
   property("backtrack min") = {
     val fn: (Double => Double) = x => Math.round((x + 0.5) / 2)
-    val result = BisectingRelation.backtrackMinValue(1.0, fn)
+    val result = Bisection.backtrackMinValue(1.0, fn)
 
     all(
       "less or eq that 0.5" |: result <= 0.5,
@@ -18,7 +18,7 @@ object BacktrackingProps extends Properties("Backtracking") {
 
   property("backtrack max") = {
     val fn: (Double => Double) = x => Math.round((x + 0.5) / 2)
-    val result = BisectingRelation.backtrackMaxValue(1.0, fn)
+    val result = Bisection.backtrackMaxValue(1.0, fn)
 
     all(
       "less that 2.5" |: result < 2.5,
@@ -28,12 +28,12 @@ object BacktrackingProps extends Properties("Backtracking") {
   }
 
   property("infinity") = throws(classOf[RuntimeException]) {
-    BisectingRelation.backtrackMinValue(
+    Bisection.backtrackMinValue(
       1, n => n, Range(Double.NegativeInfinity, 10))
   }
 
   property("not a number") = throws(classOf[RuntimeException]) {
-    BisectingRelation.backtrackMaxValue(
+    Bisection.backtrackMaxValue(
       1, n => n, Range(-22, Double.NaN))
   }
 
@@ -43,7 +43,7 @@ object BacktrackingProps extends Properties("Backtracking") {
 
     val fn = (x: Double) => x + addition
     val target = source + addition
-    val backtrackedSource = BisectingRelation.backtrackValue(target, fn)
+    val backtrackedSource = Bisection.backtrack(target, fn)
 
     fn(backtrackedSource) ?= target
   })
