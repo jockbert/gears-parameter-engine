@@ -51,6 +51,17 @@ case class RelationBuilder(target: Parameter) {
         BisectingRelation(source.max, fn, domain, target.min, preference)
         Right(())
       })
+
+  def greaterOrEqualTo(source: Parameter): Either[RelationError, Unit] = {
+    // Update values
+    source.max.set(target.value.get())
+    target.min.set(source.value.get())
+
+    // Register relations
+    IdentityRelation(source.max, target.value)
+    IdentityRelation(source.value, target.min)
+    Right(())
+  }
 }
 
 object Relation {

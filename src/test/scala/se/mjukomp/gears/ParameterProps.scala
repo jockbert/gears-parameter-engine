@@ -149,6 +149,17 @@ object ParameterProps extends Properties("Parameter") {
       "D" |: equals(d, 82.0, -70, 100))
   }
 
+  property("greater than") = {
+    val a = Parameter("A", 4, -10, 10)
+    val b = Parameter("B", 6, -100, 100)
+
+    relate(b).greaterOrEqualTo(a)
+
+    all(
+      "A" |: equals(a, 4, -10, 6),
+      "B" |: equals(b, 6, 4, 100))
+  }
+
   property("backtrack prefer min") =
     backtrackPreferenceProp(BacktrackPreference.MIN, 0.49, 0.50)
 
