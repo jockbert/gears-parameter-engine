@@ -36,23 +36,13 @@ case class BisectingRelation(
   domain:     OperationalDomain,
   target:     Amount,
   preference: BacktrackPreference)
-  extends Relation {
-
-  var blockFeedback: Boolean = false
-
-  def withoutFeedback(changeFn: () => Unit): Unit =
-    if (blockFeedback) ()
-    else {
-      blockFeedback = true
-      changeFn()
-      blockFeedback = false
-    }
+  extends Relation with NoFeedback {
 
   val sourceValueListener: ValueListener =
-    (value) => withoutFeedback(() => target.set(fn(value)))
+    value => withoutFeedback(() => target.set(fn(value)))
 
   val targetValueListener: ValueListener =
-    (value) => withoutFeedback(() => {
+    value => withoutFeedback(() => {
       val preferedValue = preference.apply(
         () => backtrackMinValue(target.get(), fn, domain.source),
         () => backtrackMaxValue(target.get(), fn, domain.source))

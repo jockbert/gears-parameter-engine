@@ -63,3 +63,16 @@ trait Relation {
   def source: Amount
   def target: Amount
 }
+
+/** Blocks change function to be called if already in some (other) change function call. */
+trait NoFeedback {
+  var blockFeedback: Boolean = false
+
+  def withoutFeedback(changeFn: () => Unit): Unit =
+    if (blockFeedback) ()
+    else {
+      blockFeedback = true
+      changeFn()
+      blockFeedback = false
+    }
+}
