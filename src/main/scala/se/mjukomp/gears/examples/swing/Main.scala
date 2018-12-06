@@ -1,4 +1,4 @@
-package se.mjukomp.gears
+package se.mjukomp.gears.examples.swing
 
 import scala.swing._
 
